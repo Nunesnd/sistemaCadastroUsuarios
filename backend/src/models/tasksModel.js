@@ -6,10 +6,10 @@ const getAll = async () => {
 };
 
 const createTask = async (task) => {
-    const {nome, login, senha, dt_nasc} = task;
-    const query = "INSERT INTO tbl_usuarios (nome_usuarios, login_usuarios, passwd_usuarios, data_nasc_usuarios) VALUES (?, ?, ?, STR_TO_DATE(?, '%d/%m/%Y'))";
+    const {nome, login, senha, dt_nasc, cpf} = task;
+    const query = "INSERT INTO tbl_usuarios (nome_usuarios, login_usuarios, passwd_usuarios, data_nasc_usuarios, cpf_usuarios) VALUES (?, ?, ?, STR_TO_DATE(?, '%d/%m/%Y'), ?)";
 
-    const [createdTask] = await connection.execute(query, [nome, login, senha, dt_nasc]);
+    const [createdTask] = await connection.execute(query, [nome, login, senha, dt_nasc, cpf]);
 
     return {insertId: createdTask.insertId};
 };
@@ -24,6 +24,9 @@ const updateTask = async (id, task) => {
 
     const fields = [];
     const values = [];
+
+    console.log('conferindo o conteudo de id: ', id)
+    console.log('conferindo o conteudo de task.nome: ', task.nome)
 
     if (task.nome !== undefined) {
         fields.push('nome_usuarios = ?');
@@ -44,6 +47,14 @@ const updateTask = async (id, task) => {
         fields.push('data_nasc_usuarios = ?');
         values.push(task.dt_nasc);
     }
+
+    if (task.cpf !== undefined) {
+        fields.push('cpf_usuarios = ?');
+        values.push(task.cpf);
+    }
+
+    console.log('conferindo array fields: ', fields)
+    console.log('conferindo array values: ', values)
 
     if (fields.length === 0) {
         throw new Error("Nenhum campo para atualizar.");

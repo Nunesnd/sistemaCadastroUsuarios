@@ -19,9 +19,9 @@ const deleteTask = async (request, response) => {
 
 const updateTask = async (request, response) => {
     const { id } = request.params;
-    const { nome_usuarios, login_usuarios, passwd_usuarios, data_nasc_usuarios } = request.body;
+    const { nome_usuarios, login_usuarios, passwd_usuarios, data_nasc_usuarios, cpf_usuarios } = request.body;
 
-    console.log('#######################################################');
+    console.log('#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-');
 
     console.log(id)
     console.log(request.body)
@@ -34,6 +34,7 @@ const updateTask = async (request, response) => {
             login: login_usuarios, 
             senha: passwd_usuarios,
             dt_nasc: data_nasc_usuarios,
+            cpf: cpf_usuarios,
         });
         response.status(200).json(updatedTask);
     } catch (error) {
