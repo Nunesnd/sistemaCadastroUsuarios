@@ -2,6 +2,7 @@ const connection = require('./conection');
 
 const getAll = async () => {
     const task = await connection.execute('SELECT * FROM tbl_usuarios;');
+    console.log('Conexão com o banco com sucesso');
     return task[0];
 };
 
@@ -66,7 +67,6 @@ const updateTask = async (id, task) => {
     const [updatedTask] = await connection.execute(query, values);
     return updatedTask;
 };
-
 
 module.exports = {
     getAll,

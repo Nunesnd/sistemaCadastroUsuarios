@@ -1,0 +1,291 @@
+backend/src/app.js
+
+const express = require('express')
+const router = require('./router');
+
+const app = express();
+
+app.use(express.json());
+app.use(router);
+
+module.exports = app;
+
+===================================
+backend/src/controllers/tasksController.js
+const taskModels = require('../models/tasksModel');
+
+const getAll = async (_request, response) => {
+    const tasks = await taskModels.getAll();
+    return response.status(200).json(tasks);
+};
+
+const createTask = async (request, response) => {
+    const createdTask = await taskModels.createTask(request.body);
+    return response.status(201).json(createdTask);
+};
+
+const deleteTask = async (request, response) => {
+    const {id} = request.params;
+
+    await taskModels.deleteTask(id);
+    return response.status(204).json();
+};
+
+const updateTask = async (request, response) => {
+    const { id } = request.params;
+    const { nome_usuarios, login_usuarios, passwd_usuarios, data_nasc_usuarios, cpf_usuarios } = request.body;
+
+    console.log('#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-');
+
+    console.log(id)
+    console.log(request.body)
+
+    console.log('#######################################################');
+
+    try {
+        const updatedTask = await taskModels.updateTask(id, { 
+            nome: nome_usuarios, 
+            login: login_usuarios, 
+            senha: passwd_usuarios,
+            dt_nasc: data_nasc_usuarios,
+            cpf: cpf_usuarios,
+        });
+        response.status(200).json(updatedTask);
+    } catch (error) {
+        response.status(400).json({ error: error.message });
+    }
+};
+
+module.exports = {
+    getAll,
+    createTask,
+    deleteTask,
+    updateTask,
+};
+
+===================================
+
+const validaCampos = (request, response, next) => {
+
+    const { body } = request;
+
+    if (body.nome === undefined) {
+        return response.status(400).json({message: 'o campo nome é necessário'});
+    }
+
+    if (body.nome === '') {
+        return response.status(400).json({message: 'campo nome não pode ser em branco'});
+    }
+
+    if (body.login === undefined) {
+        return response.status(400).json({message: 'o campo login é necessário'});
+    }
+
+    if (body.login === '') {
+        return response.status(400).json({message: 'campo login não pode ser em branco'});
+    }
+
+    if (body.senha === undefined) {
+        return response.status(400).json({message: 'o campo senha é necessário'});
+    }
+
+    if (body.senha === '') {
+        return response.status(400).json({message: 'campo senha não pode ser em branco'});
+    }
+
+    if (body.cpf === undefined) {
+        return response.status(400).json({message: 'o campo cpf é necessário'});
+    }
+
+    if (body.cpf === '') {
+        return response.status(400).json({message: 'campo cpf não pode ser em branco'});
+    }
+    
+
+    next();
+};
+
+module.exports = {
+    validaCampos,
+}
+
+===================================
+
+backend/src/models/conection.js
+
+const mysql = require('mysql2/promise');
+
+require('dotenv').config();
+
+const connection = mysql.createPool({
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWD,
+    database: process.env.MYSQL_DATABASE
+});
+
+module.exports = connection;
+
+===================================
+
+backend/src/models/tasksModel.js
+
+const connection = require('./conection');
+
+const getAll = async () => {
+    const task = await connection.execute('SELECT * FROM tbl_usuarios;');
+    console.log('conectado ao banco');
+    return task[0];
+};
+
+const createTask = async (task) => {
+    const {nome, login, senha, dt_nasc, cpf} = task;
+    const query = "INSERT INTO tbl_usuarios (nome_usuarios, login_usuarios, passwd_usuarios, data_nasc_usuarios, cpf_usuarios) VALUES (?, ?, ?, STR_TO_DATE(?, '%d/%m/%Y'), ?)";
+
+    const [createdTask] = await connection.execute(query, [nome, login, senha, dt_nasc, cpf]);
+
+    return {insertId: createdTask.insertId};
+};
+
+const deleteTask = async (id) => {
+    const removeTask = await connection.execute('DELETE FROM tbl_usuarios WHERE id_usuarios = ?', [id]);
+    return removeTask;
+};
+
+const updateTask = async (id, task) => {
+    console.log("Dados recebidos para atualização:", task);
+
+    const fields = [];
+    const values = [];
+
+    console.log('conferindo o conteudo de id: ', id)
+    console.log('conferindo o conteudo de task.nome: ', task.nome)
+
+    if (task.nome !== undefined) {
+        fields.push('nome_usuarios = ?');
+        values.push(task.nome);
+    }
+
+    if (task.login !== undefined) {
+        fields.push('login_usuarios = ?');
+        values.push(task.login);
+    }
+
+    if (task.senha !== undefined) {
+        fields.push('passwd_usuarios = ?');
+        values.push(task.senha);
+    }
+    
+    if (task.dt_nasc !== undefined) {
+        fields.push('data_nasc_usuarios = ?');
+        values.push(task.dt_nasc);
+    }
+
+    if (task.cpf !== undefined) {
+        fields.push('cpf_usuarios = ?');
+        values.push(task.cpf);
+    }
+
+    console.log('conferindo array fields: ', fields)
+    console.log('conferindo array values: ', values)
+
+    if (fields.length === 0) {
+        throw new Error("Nenhum campo para atualizar.");
+    }
+
+    const query = `UPDATE tbl_usuarios SET ${fields.join(', ')} WHERE id_usuarios = ?`;
+    values.push(id);
+
+    const [updatedTask] = await connection.execute(query, values);
+    return updatedTask;
+};
+
+module.exports = {
+    getAll,
+    createTask,
+    deleteTask,
+    updateTask,
+};
+===============
+backend/src/router.js
+
+const express = require('express');
+const router = express.Router();
+
+const taskController = require('./controllers/tasksController');
+const tasksMiddleware = require('./middlewares/tasksMiddleware');
+
+router.get('/', (request, response) => response.status(200).send('fazendo o post!!!'))
+
+router.get('/usuarios', taskController.getAll);
+router.post('/cadastrando', tasksMiddleware.validaCampos, taskController.createTask);
+router.delete('/cadastrando/:id', taskController.deleteTask);
+router.put('/cadastrando/:id', taskController.updateTask);
+
+module.exports = router;===================================
+backend/src/server.js
+
+backend/src/router.js
+===================================
+frontend/src/pages/home/index.jsx
+
+import { useEffect } from 'react'
+import './styles.css'
+import Delete from '../../assets/lixeira.svg'
+import api from '../../services/api'
+
+function Home() {
+
+  const userTestes = []
+
+  async function getUsers() {
+    userTestes.push = await api.get('/usuarios')
+  }
+
+  useEffect(() => {
+    getUsers()
+  }, [])
+
+  return (
+    <>
+      <div className='container'>
+        <form className='formulario' action="post">
+          <h1>Cadastro de usuários</h1>
+          <input type="text" name='nome' placeholder='nome' />
+          <input type="date" name="nascimento" placeholder='nascimento' />
+          <input type="email" name='email' placeholder='e-mail' />
+          <input type="text" name='login' placeholder='login' />
+          <input type="password" name='senha' placeholder='senha' />
+          <input type="text" name='cpf' placeholder='CPF' />
+          <button type="button">Cadastrar</button>
+        </form>
+
+      {userTestes.map((usuario) => (
+        <div className="usuarios">
+          <div>
+            <p>Nome: <span>{usuario.nome}</span></p>
+            <p>CPF: <span>{usuario.cpf}</span></p>
+            <p>Email: <span>{usuario.email}</span></p>
+            <p>Login: <span>{usuario.login}</span></p>
+          </div>
+          <button><img src={Delete} alt="delete" /></button>
+        </div>
+      ))}
+      
+      </div>
+
+    </>
+  )
+}
+
+export default Home
+===================================
+frontend/src/services/api.js
+
+import axios from 'axios'
+
+const api = axios.create({
+    baseURL: 'http://localhost:3000'
+})
+
+export default api
