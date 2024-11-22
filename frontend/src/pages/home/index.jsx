@@ -35,12 +35,13 @@ function Home() {
       login: inputLogin.current.value,
       senha: inputSenha.current.value
     }) 
-    console.log('Nome: ', inputNome.current.value)
-    console.log('cpf: ', inputCPF.current.value)
-    console.log('nasc: ', inputNasc.current.value)
-    console.log('email: ', inputEmail.current.value)
-    console.log('login: ', inputLogin.current.value)
-    console.log('senha: ', inputSenha.current.value)
+
+    getUsers()
+  }
+
+  async function deletaUsers(id) {
+    await api.delete(`/cadastrando/${id}`); 
+    getUsers()
   }
 
   useEffect(() => {
@@ -70,7 +71,9 @@ function Home() {
               <p>Email: <span>{usuario.email}</span></p>
               <p>Login: <span>{usuario.login_usuarios}</span></p>
             </div>
-            <button><img src={Delete} alt="delete" /></button>
+            <button onClick={ () => deletaUsers(usuario.id_usuarios) }>
+              <img src={Delete} alt="delete" />
+            </button>
           </div>
         ))}
       </div>
