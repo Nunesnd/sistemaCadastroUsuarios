@@ -7,10 +7,10 @@ const getAll = async () => {
 };
 
 const createTask = async (task) => {
-    const {nome, login, senha, dt_nasc, cpf} = task;
-    const query = "INSERT INTO tbl_usuarios (nome_usuarios, login_usuarios, passwd_usuarios, data_nasc_usuarios, cpf_usuarios) VALUES (?, ?, ?, STR_TO_DATE(?, '%d/%m/%Y'), ?)";
+    const {nome, login, senha, dt_nasc, cpf, email} = task;
+    const query = "INSERT INTO tbl_usuarios (nome_usuarios, login_usuarios, passwd_usuarios, data_nasc_usuarios, cpf_usuarios, email_usuarios) VALUES (?, ?, ?, STR_TO_DATE(?, '%d/%m/%Y'), ?, ?)";
 
-    const [createdTask] = await connection.execute(query, [nome, login, senha, dt_nasc, cpf]);
+    const [createdTask] = await connection.execute(query, [nome, login, senha, dt_nasc, cpf, email]);
 
     return {insertId: createdTask.insertId};
 };
@@ -52,6 +52,11 @@ const updateTask = async (id, task) => {
     if (task.cpf !== undefined) {
         fields.push('cpf_usuarios = ?');
         values.push(task.cpf);
+    }
+
+    if (task.email !== undefined) {
+        fields.push('email_usuarios = ?');
+        values.push(task.email);
     }
 
     console.log('conferindo array fields: ', fields)
