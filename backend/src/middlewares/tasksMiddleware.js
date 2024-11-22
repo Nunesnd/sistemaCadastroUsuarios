@@ -3,7 +3,7 @@ const validaCampos = (request, response, next) => {
     const { body } = request;
 
     if (body.nome === undefined) {
-        return response.status(400).json({message: 'o campos nome é necessário'});
+        return response.status(400).json({message: 'o campo nome é necessário'});
     }
 
     if (body.nome === '') {
@@ -11,7 +11,7 @@ const validaCampos = (request, response, next) => {
     }
 
     if (body.login === undefined) {
-        return response.status(400).json({message: 'o campos login é necessário'});
+        return response.status(400).json({message: 'o campo login é necessário'});
     }
 
     if (body.login === '') {
@@ -19,11 +19,19 @@ const validaCampos = (request, response, next) => {
     }
 
     if (body.senha === undefined) {
-        return response.status(400).json({message: 'o campos senha é necessário'});
+        return response.status(400).json({message: 'o campo senha é necessário'});
     }
 
     if (body.senha === '') {
         return response.status(400).json({message: 'campo senha não pode ser em branco'});
+    }
+
+    if (body.cpf === undefined) {
+        return response.status(400).json({message: 'o campo cpf é necessário'});
+    }
+
+    if (body.cpf === '') {
+        return response.status(400).json({message: 'campo cpf não pode ser em branco'});
     }
     
 
